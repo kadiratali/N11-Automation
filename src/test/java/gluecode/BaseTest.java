@@ -4,15 +4,10 @@ import base.DriverFactory;
 import io.cucumber.java.After;
 import io.cucumber.java.Before;
 import io.cucumber.java.Scenario;
-import org.openqa.selenium.Cookie;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import pages.BasicActions;
-
 import java.time.Duration;
 
 public class BaseTest {
@@ -27,11 +22,13 @@ public class BaseTest {
         DriverFactory.driverPool.set(DriverFactory.createInstance());
         DriverFactory.driverPool.get().manage().window().maximize();
         openPage(PAGE);
+        scenario.log("Scenario name: " + scenario.getName());
     }
 
     @After
     public synchronized void tearDown(Scenario scenario){
         DriverFactory.closeDriver();
+        scenario.log("Scenario name: " + scenario.getName());
     }
 
     private synchronized void openPage(String targetPage){

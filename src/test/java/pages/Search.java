@@ -1,24 +1,26 @@
 package pages;
 
+import base.DriverFactory;
 import org.openqa.selenium.By;
+import org.openqa.selenium.Cookie;
 import org.openqa.selenium.WebElement;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.testng.Assert;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.stream.Collectors;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.*;
 
 import static constants.HomePageConstants.*;
 
 public class Search extends BasicActions {
-    private static final Logger log = LoggerFactory.getLogger(Search.class);
     String marketName;
     List<String> marketNames = new ArrayList<>();
 
+    /**
+     * Mağazalar sayfasında, belirtilen harfle başlayan mağazaları filtreler.
+     *
+     * @param letter Mağazaların başlangıç harfi.
+     */
     public void filtersForStoresStartingWithTheLetter(String letter) {
         assertVisible(MARKETS_WITHS_START(letter), "All stores could not be displayed in the filter area on the stores page.");
         scrollToElement(findElement(MARKETS_WITHS_START(letter), 10));
@@ -26,6 +28,9 @@ public class Search extends BasicActions {
         logger().info("Click the letter with start '%s'".formatted(letter));
     }
 
+    /**
+     * Listeden rastgele bir mağaza seçer ve tıklar.
+     */
     public void pressOnARandomStoreFromTheList() {
         timeUnitMilliSeconds(2000);
         assertVisible(MARKETS_PAGE_MARKET_LIST, "Market Listesi Görüntülenemedi");
@@ -35,6 +40,10 @@ public class Search extends BasicActions {
         clickJs(findElements(MARKETS_PAGE_MARKET_LIST).get(randomElementFromMarketLst));
     }
 
+    /**
+     * Seçilen mağaza sayfasının doğru açıldığını doğrular.
+     * Arama alanındaki ve sonuç metnindeki mağaza adını kontrol eder.
+     */
     public void selectedStorePageIsOpened() {
         assertVisible(SEARCH_AREA, "Sayfa Görüntülenemedi");
         if (isElementVisible(MARKET_RESULT_TXT, 5)){
@@ -47,17 +56,26 @@ public class Search extends BasicActions {
         logger().info("The selected store's page is opened correctly.");
     }
 
+    /**
+     * Arama çubuğuna belirtilen kelimeyi yazar ve arama yapar.
+     *
+     * @param word Aranacak kelime.
+     */
     public void theUserSearchesForTheWord(String word) {
         assertVisible(SEARCH_AREA, " search bar görüntülenemedi.");
         sendKeyElement(SEARCH_AREA, word, true);
         logger().info("Search for '%s'".formatted(word));
     }
 
+    /**
+     * Sayfadaki ilk ve son ürünü sepete ekler.
+     * Eğer sadece bir ürün varsa, sadece onu ekler.
+     */
     public void addsTheFirstAndTheLastProductToTheBasket() {
-        // 1. Ürün listesinin görünür olduğunu doğrula
+
         assertVisible(PRODUCT_LST, "Products could not be displayed on the page.");
 
-        // 2. Tüm ürün elementlerini SADECE BİR KEZ al
+
         List<WebElement> products = findElements(PRODUCT_LST);
         if (products.isEmpty()) {
             logger().warn("No products found on the page to add to the basket.");
@@ -70,7 +88,6 @@ public class Search extends BasicActions {
         if (products.size() > 1) {
             timeUnitMilliSeconds(2000);
             WebElement lastProduct = products.getLast();
-            // Son elemente tıklamadan önce ona scroll yapmak daha güvenilirdir
             scrollToElement(lastProduct);
             addProduct(lastProduct, "last");
         }
@@ -78,7 +95,7 @@ public class Search extends BasicActions {
 
     /**
      * Belirtilen bir ürün elementini sepete ekler.
-     * Ürün seçenekleri (renk, beden vb.) çıkarsa bunları da seçer.
+     * Ürün seçenekleri (renk, hafıza vb.) çıkarsa bunları da seçer.
      *
      * @param productElement Sepete eklenecek ürünün WebElement'i
      * @param positionLog    Loglama için ürünün pozisyonu ("first", "last" vb.)
@@ -110,6 +127,10 @@ public class Search extends BasicActions {
         }
     }
 
+    /**
+     * Sepette iki ürün olduğunu doğrular ve bu ürünlerin daha önce
+     * eklenen ürünlerle eşleştiğini kontrol eder.
+     */
     public void verifyThatThereAreTwoItemsInTheBasket() {
         assertVisible(HOME_PAGE_BASKET, "Basket could not be displayed on the page.");
         scrollToElement(findElement(HOME_PAGE_BASKET, 5));
@@ -126,6 +147,11 @@ public class Search extends BasicActions {
         assertEquals(basketProducts, getMarketNames(), "The basket does not contain the correct products.");
     }
 
+    /**
+     * Ürün listeleme sayfasındaki filtrelerden belirli bir markayı seçer.
+     *
+     * @param nthBrand Seçilecek markanın listedeki konumu (indis).
+     */
     public void selectsTheBrandFromTheFiltersOnTheProductListingPage(int nthBrand) {
         assertVisible(PRODUCT_BRAND_APPLE, "");
         scrollToElement(findElement(PRODUCT_BRAND_APPLE, 5));
@@ -133,6 +159,11 @@ public class Search extends BasicActions {
         logger().info("Selecting the brand {} from the product listing page.", nthBrand);
     }
 
+    /**
+     * Ürün sonuçlarını belirli bir parametreye göre sıralar ve sıralamanın doğru olduğunu doğrular.
+     *
+     * @param parameter Sıralama için kullanılacak parametre (örneğin "yorum sayısı").
+     */
     public void sortsTheResultsBy(String parameter) {
         timeUnitMilliSeconds(2000);
         assertVisible(PRODUCT_SORT_FILTER, "");
@@ -157,6 +188,9 @@ public class Search extends BasicActions {
         logger().info("Sorting by {} ", parameter);
     }
 
+    /**
+     * Listelenen tüm ürünlerin "Ücretsiz Kargo" etiketine sahip olduğunu doğrular.
+     */
     public void theUserShouldVerifyThatAllListedProductsHaveFreeShipping() {
         assertVisible(CARGO_BADGE_TEXT_LST, "Ücretsiz Kargo alanı görüntülenemedi.");
         List<WebElement> productBadges = findElements(CARGO_BADGE_TEXT_LST);
@@ -174,7 +208,28 @@ public class Search extends BasicActions {
 
     }
 
+    /**
+     * Arama çubuğuna "iphone" kelimesini yazar, arama yapar ve elde edilen
+     * tüm çerezleri bir dosyaya kaydeder.
+     *
+     * @throws IOException Dosya yazma sırasında bir hata oluşursa fırlatılır.
+     */
+    public void takeSearchCookie() throws IOException {
+        assertVisible(SEARCH_AREA, " search bar görüntülenemedi.");
+        sendKeyElement(SEARCH_AREA, "iphone", true);
+        timeUnitMilliSeconds(5000);
+        Set<Cookie> allCookies = DriverFactory.driverPool.get().manage().getCookies();
+        FileWriter fileWriter = new FileWriter("n11_cookies.txt");
+        for (Cookie cookie : allCookies) {
+            fileWriter.write(cookie.getName() + "=" + cookie.getValue() + ";");
+        }
+        fileWriter.close();
 
+        logger().info("Search cookie taken successfully.");
+
+    }
+
+    // Getter ve Setter Metotları
     public String getMarketName() {
         return marketName;
     }

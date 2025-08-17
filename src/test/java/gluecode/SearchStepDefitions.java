@@ -7,6 +7,8 @@ import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import pages.Search;
 
+import java.io.IOException;
+
 public class SearchStepDefitions {
 
     Search searchPage = new Search();
@@ -58,5 +60,10 @@ public class SearchStepDefitions {
     @Then("The user should verify that all listed products have free shipping")
     public void theUserShouldVerifyThatAllListedProductsHaveFreeShipping() {
         searchPage.theUserShouldVerifyThatAllListedProductsHaveFreeShipping();
+    }
+
+    @Then("Take Search Cookie")
+    public void takeSearchCookie() throws IOException {
+        searchPage.takeSearchCookie();
     }
 }
